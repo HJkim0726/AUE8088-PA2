@@ -690,6 +690,7 @@ def draw_all(eval_results, filename='figure.jpg'):
 
     filename += '' if filename.endswith('.jpg') or filename.endswith('.png') else '.jpg'
     plt.savefig(filename)
+    print(f'Saved figure to {filename}')
 
 
 if __name__ == "__main__":

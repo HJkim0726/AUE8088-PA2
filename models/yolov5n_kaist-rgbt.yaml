@@ -4,10 +4,14 @@
 nc: 1 # number of classes
 depth_multiple: 0.33 # model depth multiple
 width_multiple: 0.25 # layer channel multiple
+# anchors:
+#   - [10, 13, 16, 30, 33, 23] # P3/8
+#   - [30, 61, 62, 45, 59, 119] # P4/16
+#   - [116, 90, 156, 198, 373, 326] # P5/32
 anchors:
-  - [10, 13, 16, 30, 33, 23] # P3/8
-  - [30, 61, 62, 45, 59, 119] # P4/16
-  - [116, 90, 156, 198, 373, 326] # P5/32
+  - [12,32, 16,40, 20,56]      # P3  (stride 8)   ┐
+  - [24,64, 32,96, 40,120]     # P4  (stride 16)  │  모두 가로:세로 ≈ 0.4~0.5
+  - [48,160, 64,192, 80,224]   # P5  (stride 32)  ┘
 
 # YOLOv5 v6.0 backbone
 backbone:

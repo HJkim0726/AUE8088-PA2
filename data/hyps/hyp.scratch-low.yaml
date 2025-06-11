@@ -10,7 +10,7 @@ weight_decay: 0.0005 # optimizer weight decay 5e-4
 warmup_epochs: 3.0 # warmup epochs (fractions ok)
 warmup_momentum: 0.8 # warmup initial momentum
 warmup_bias_lr: 0.1 # warmup initial bias lr
-box: 0.05 # box loss gain
+box: 0.2 # box loss gain
 cls: 0.5 # cls loss gain
 cls_pw: 1.0 # cls BCELoss positive_weight
 obj: 1.0 # obj loss gain (scale with pixels)
@@ -32,3 +32,17 @@ fliplr: 0.5 # image flip left-right (probability)
 mosaic: 1.0 # image mosaic (probability)
 mixup: 0.0 # image mixup (probability)
 copy_paste: 0.0 # segment copy-paste (probability)
+
+box_loss_type: reg        # iou | reg | both
+reg_loss_type: smooth_l1   # l1 | smooth_l1 | l2
+reg_loss_weight: 1.0       # both 모드에서 회귀 손실 비중
+
+mosaic: 1.0        # 1.0이면 항상 Mosaic, 0.5는 50% 확률
+mixup:  0.2        # 0.0~0.3 사이가 보행자에 무난
+flipud: 0.0        # RGBT는 위·아래 뒤집기 효과 미미
+fliplr: 0.5        # 좌우 뒤집기만 사용
+degrees: 1.0
+translate: 0.01
+scale: 0.5
+shear: 0.0
+perspective: 0.0

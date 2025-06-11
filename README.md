@@ -106,12 +106,12 @@
   ```bash
   $ python train_simple.py \
     --img 640 \
-    --batch-size 16 \
+    --batch-size 32 \
     --epochs 20 \
     --data data/kaist-rgbt.yaml \
     --cfg models/yolov5n_kaist-rgbt.yaml \
     --weights yolov5n.pt \
-    --workers 16 \
+    --workers 4 \
     --name yolov5n-rgbt \
     --entity $WANDB_ENTITY \
     --rgbt \

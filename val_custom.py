@@ -39,7 +39,7 @@ from models.experimental import attempt_load
 from models.yolo import Model
 from utils.callbacks import Callbacks
 from utils.dataloaders import create_dataloader
-# from utils.dataloaders_custom_ver2 import create_dataloader
+# from utils.dataloaders_custom import create_dataloader
 from utils.downloads import attempt_download
 from utils.general import (
     LOGGER,
@@ -63,9 +63,9 @@ from utils.general import (
     yaml_save,
 )
 from utils.loggers import Loggers
-from utils.loss import ComputeLoss
+# from utils.loss import ComputeLoss
 # from utils.custom_loss import ComputeLoss
-# from utils.loss_ver2 import ComputeLoss
+from utils.loss_ver2 import ComputeLoss
 from utils.metrics import fitness
 from utils.torch_utils import (
     EarlyStopping,
@@ -259,6 +259,7 @@ def train(hyp, opt, device, callbacks):
         f'Starting training for {epochs} epochs...'
     )
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
+        break
         callbacks.run("on_train_epoch_start")
         model.train()
 
@@ -384,30 +385,27 @@ def train(hyp, opt, device, callbacks):
 
     # end training -----------------------------------------------------------------------------------------------------
     LOGGER.info(f"\n{epoch - start_epoch + 1} epochs completed in {(time.time() - t0) / 3600:.3f} hours.")
-    for f in last, best:
-        if f.exists():
-            strip_optimizer(f)  # strip optimizers
-            if f is best:
-                LOGGER.info(f"\nValidating {f}...")
-                results, _, _ = validate.run(
-                    data_dict,
-                    batch_size=batch_size * 2,
-                    imgsz=imgsz,
-                    model=attempt_load(f, device).half(),
-                    iou_thres=0.65 if is_coco else 0.60,  # best pycocotools at iou 0.65
-                    single_cls=single_cls,
-                    dataloader=val_loader,
-                    save_dir=save_dir,
-                    save_json=True,
-                    verbose=True,
-                    plots=False,
-                    callbacks=callbacks,
-                    compute_loss=compute_loss,
-                )  # val best model with plots
-                if is_coco:
-                    callbacks.run("on_fit_epoch_end", list(mloss) + list(results) + lr, epoch, best_fitness, fi)
 
-    callbacks.run("on_train_end", last, best, epoch, results)
+    LOGGER.info(f"\nValidating {f}...")
+    results, _, _ = validate.run(
+        data_dict,
+        batch_size=batch_size * 2,
+        imgsz=imgsz,
+        model=ema.ema,
+        iou_thres=0.65 if is_coco else 0.60,  # best pycocotools at iou 0.65
+        single_cls=single_cls,
+        dataloader=val_loader,
+        save_dir=save_dir,
+        save_json=True,
+        verbose=True,
+        plots=False,
+        callbacks=callbacks,
+        compute_loss=compute_loss,
+    )  # val best model with plots
+    if is_coco:
+        callbacks.run("on_fit_epoch_end", list(mloss) + list(results) + lr, epoch, best_fitness, fi)
+
+    # callbacks.run("on_train_end", last, best, epoch, results)
 
     torch.cuda.empty_cache()
     return results
