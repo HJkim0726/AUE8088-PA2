@@ -3,8 +3,10 @@
 # python train.py --batch 64 --cfg yolov5n6.yaml --weights '' --data coco.yaml --img 640 --epochs 300 --linear
 # See tutorials for hyperparameter evolution https://github.com/ultralytics/yolov5#tutorials
 
-lr0: 0.01 # initial learning rate (SGD=1E-2, Adam=1E-3)
-lrf: 0.01 # final OneCycleLR learning rate (lr0 * lrf)
+# lr0: 0.01 # initial learning rate (SGD=1E-2, Adam=1E-3)
+# lrf: 0.01 # final OneCycleLR learning rate (lr0 * lrf)
+lr0: 0.015 # initial learning rate (SGD=1E-2, Adam=1E-3)
+lrf: 0.005 # final OneCycleLR learning rate (lr0 * lrf)
 momentum: 0.937 # SGD momentum/Adam beta1
 weight_decay: 0.0005 # optimizer weight decay 5e-4
 warmup_epochs: 3.0 # warmup epochs (fractions ok)
@@ -34,15 +36,15 @@ mixup: 0.0 # image mixup (probability)
 copy_paste: 0.0 # segment copy-paste (probability)
 
 box_loss_type: reg        # iou | reg | both
-reg_loss_type: smooth_l1   # l1 | smooth_l1 | l2
+reg_loss_type: l2   # l1 | smooth_l1 | l2
 reg_loss_weight: 1.0       # both 모드에서 회귀 손실 비중
 
 mosaic: 1.0        # 1.0이면 항상 Mosaic, 0.5는 50% 확률
 mixup:  0.2        # 0.0~0.3 사이가 보행자에 무난
 flipud: 0.0        # RGBT는 위·아래 뒤집기 효과 미미
-fliplr: 0.5        # 좌우 뒤집기만 사용
-degrees: 1.0
-translate: 0.01
+fliplr: 0.2        # 좌우 뒤집기만 사용
+degrees: 0.0
+translate: 0.1
 scale: 0.5
 shear: 0.0
 perspective: 0.0

@@ -113,7 +113,7 @@ class ComputeLoss:
         h = model.hyp  # hyperparameters
         
         self.box_loss_type  = h.get('box_loss_type',  'reg')      # 'iou' | 'reg' | 'both'
-        self.reg_loss_type  = h.get('reg_loss_type',  'smooth_l1') # 'l1' | 'smooth_l1' | 'l2'
+        self.reg_loss_type  = h.get('reg_loss_type',  'l2') # 'l1' | 'smooth_l1' | 'l2'
         self.reg_loss_weight= h.get('reg_loss_weight', 1.0)        # both 모드 가중치
 
         # Define criteria

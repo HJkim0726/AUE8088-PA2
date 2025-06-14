@@ -708,5 +708,5 @@ if __name__ == "__main__":
 
     # Sort results by MR_all
     if args.evalFig is not None:
-        results = sorted(results, key=lambda x: x['all'].summarize(0), reverse=True)
+        results = sorted(results, key=lambda x: x['all'].summarize(0).all(), reverse=True)
         draw_all(results, filename=args.evalFig)

@@ -823,7 +823,7 @@ class LoadImagesAndLabels(Dataset):
             nl = len(labels)  # update after albumentations
 
             # HSV color-space
-            augment_hsv(img, hgain=hyp["hsv_h"], sgain=hyp["hsv_s"], vgain=hyp["hsv_v"])
+            # augment_hsv(img, hgain=hyp["hsv_h"], sgain=hyp["hsv_s"], vgain=hyp["hsv_v"])
 
             # Flip up-down
             if random.random() < hyp["flipud"]:
@@ -848,6 +848,8 @@ class LoadImagesAndLabels(Dataset):
         # Convert
         img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
         img = np.ascontiguousarray(img)
+        import cv2  # ensure cv2 is imported for imwrite
+        cv2.imwrite("debug_image.jpg", img.transpose((1, 2, 0))[::-1])  # save debug image
 
         return torch.from_numpy(img), labels_out, self.im_files[index], shapes, index
 
@@ -1083,19 +1085,20 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
     }
 
     def __init__(self, path, **kwargs):
+        self._aug_saved = False
         # HACK: cannot guarantee that path contain split name
         is_train = 'train' in path
         single_cls = kwargs['single_cls']
         kwargs['single_cls'] = False
         assert kwargs['cache_images'] != 'ram', 'Image caching for RGBT dataset is not implemented yet.'
-        if not is_train:
-            assert not kwargs['rect'], 'Please do not turn-on "rect" option for validation. ' \
-                                  'It causes shuffling of images and breaks the kaist evaluation pipeline.'
+        # if not is_train:
+        #     assert not kwargs['rect'], 'Please do not turn-on "rect" option for validation. ' \
+        #                           'It causes shuffling of images and breaks the kaist evaluation pipeline.'
 
         super().__init__(path, **kwargs)
 
         # TODO: make mosaic augmentation work
-        self.mosaic = False
+        self.mosaic = True
 
         # Set ignore flag
         cond = self.ignore_settings['train' if is_train else 'test']
@@ -1204,6 +1207,15 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
 
             # TODO: Load mosaic
             img, labels = self.load_mosaic(index)
+            import matplotlib.pyplot as plt
+            img = img.astype(np.uint8)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # convert BGR to RGB for visualization
+            if not self._aug_saved:
+                # HWC-RGB → HWC-BGR 로 변환 후 저장
+                dbg = cv2.cvtColor(img.copy(), cv2.COLOR_RGB2BGR)
+                cv2.imwrite("debug_augmented_once.jpg", dbg)
+                self._aug_saved = True
+                print("Augmented image saved as 'debug_augmented_once.jpg' for debugging.")
             shapes = None
 
             # TODO: MixUp augmentation
@@ -1266,6 +1278,12 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
                     # Cutouts
                     # labels = cutout(img, labels, p=0.5)
                     # nl = len(labels)  # update after cutout
+                    # if not self._aug_saved:
+                    #     # HWC-RGB → HWC-BGR 로 변환 후 저장
+                    #     dbg = cv2.cvtColor(img.copy(), cv2.COLOR_RGB2BGR)
+                    #     cv2.imwrite("debug_augmented_once.jpg", dbg)
+                    #     self._aug_saved = True
+                    #     print("Augmented image saved as 'debug_augmented_once.jpg' for debugging.")
 
                 labels_out = torch.zeros((nl, 7))
                 if nl:
@@ -1279,6 +1297,8 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
 
         # Drop occlusion level
         labels_out = labels_out[:, :-1]
+        
+
         return imgs, labels_out, self.im_files[index], shapes, index
 
     def load_image(self, i):

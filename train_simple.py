@@ -38,8 +38,9 @@ import val as validate  # for end-of-epoch mAP
 from models.experimental import attempt_load
 from models.yolo import Model
 from utils.callbacks import Callbacks
-from utils.dataloaders import create_dataloader
-# from utils.dataloaders_custom_ver2 import create_dataloader
+# from utils.dataloaders import create_dataloader
+from utils.dataloaders_custom_ver2 import create_dataloader
+from utils.autoanchor import check_anchors
 from utils.downloads import attempt_download
 from utils.general import (
     LOGGER,
@@ -189,12 +190,12 @@ def train(hyp, opt, device, callbacks):
         gs,
         single_cls,
         hyp=hyp,
-        augment=False,      # TODO: make it work
+        augment=True,      # TODO: make it work
         cache=None if opt.cache == "val" else opt.cache,
         rect=opt.rect,
         rank=-1,
         workers=workers,
-        image_weights=False,
+        image_weights=True,
         quad=opt.quad,
         prefix=colorstr("train: "),
         shuffle=True,
@@ -223,8 +224,8 @@ def train(hyp, opt, device, callbacks):
     )[0]
 
     # pre-reduce anchor precision
+    check_anchors(dataset, model=model, thr=hyp["anchor_t"], imgsz=imgsz)
     model.half().float()
-
     callbacks.run("on_pretrain_routine_end", labels, names)
 
     # Model attributes

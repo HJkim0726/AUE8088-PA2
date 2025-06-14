@@ -42,9 +42,11 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
 
     stride = m.stride.to(m.anchors.device).view(-1, 1, 1)  # model strides
     anchors = m.anchors.clone() * stride  # current anchors
+    print(f"Previous anchors:\n{anchors.cpu().view(-1, 2)}")
     bpr, aat = metric(anchors.cpu().view(-1, 2))
     s = f"\n{PREFIX}{aat:.2f} anchors/target, {bpr:.3f} Best Possible Recall (BPR). "
-    if bpr > 0.98:  # threshold to recompute
+    # if bpr > 0.98:  # threshold to recompute
+    if False:
         LOGGER.info(f"{s}Current anchors are a good fit to dataset ✅")
     else:
         LOGGER.info(f"{s}Anchors are a poor fit to dataset ⚠️, attempting to improve...")
@@ -56,6 +58,7 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
             m.anchors[:] = anchors.clone().view_as(m.anchors)
             check_anchor_order(m)  # must be in pixel-space (not grid-space)
             m.anchors /= stride
+            print(f"New anchors:\n{anchors.cpu().view(-1, 2)}")
             s = f"{PREFIX}Done ✅ (optional: update model *.yaml to use these anchors in the future)"
         else:
             s = f"{PREFIX}Done ⚠️ (original anchors better than new anchors, proceeding with original anchors)"

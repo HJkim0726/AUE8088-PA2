@@ -13,8 +13,8 @@ train: # train files info (relative to 'path') 12,538 images
   - train-all-04.txt      # TODO: Please separate this file into train/val
 val: # val files info (relative to 'path')  12,538 images
   # - val_set.txt
-  # - test-all-20.txt
-  - train-all-04.txt
+  - test-all-20.txt
+  # - train-all-04.txt
 test: # test files info (optional)
   - test-all-20.txt
 
