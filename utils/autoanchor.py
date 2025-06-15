@@ -45,8 +45,8 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
     print(f"Previous anchors:\n{anchors.cpu().view(-1, 2)}")
     bpr, aat = metric(anchors.cpu().view(-1, 2))
     s = f"\n{PREFIX}{aat:.2f} anchors/target, {bpr:.3f} Best Possible Recall (BPR). "
-    # if bpr > 0.98:  # threshold to recompute
-    if False:
+    if bpr > 0.98:  # threshold to recompute
+    # if False:
         LOGGER.info(f"{s}Current anchors are a good fit to dataset ✅")
     else:
         LOGGER.info(f"{s}Anchors are a poor fit to dataset ⚠️, attempting to improve...")

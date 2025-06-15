@@ -36,23 +36,35 @@ backbone:
 
 # YOLOv5 v6.0 head
 head: [
-    [-1, 1, Conv, [512, 1, 1]],
-    [-1, 1, nn.Upsample, [None, 2, "nearest"]],
-    [[-1, 7], 1, Concat, [1]], # cat backbone P4
-    [-1, 3, C3, [512, False]], # 15
+    # --- P5 → P4 경로 ---
+    [-1, 1, Conv, [512, 1, 1]],           # 12
+    [-1, 1, nn.Dropout2d, [0.4]],     # 13   ↓ p=0.4
+    [-1, 1, nn.Upsample, [None, 2, "nearest"]],  # 14
+    [[-1, 7], 1, Concat, [1]],            # 15
+    [-1, 3, C3, [512, False]],            # 16  (P4 특성)
+    [-1, 1, nn.Dropout2d, [0.4]],     # 17
 
-    [-1, 1, Conv, [256, 1, 1]],
-    [-1, 1, nn.Upsample, [None, 2, "nearest"]],
-    [[-1, 5], 1, Concat, [1]], # cat backbone P3
-    [-1, 3, C3, [256, False]], # 19 (P3/8-small)
+    # --- P4 → P3 경로 ---
+    [-1, 1, Conv, [256, 1, 1]],           # 18
+    [-1, 1, nn.Dropout2d, [0.4]],     # 19
+    [-1, 1, nn.Upsample, [None, 2, "nearest"]],  # 20
+    [[-1, 5], 1, Concat, [1]],            # 21
+    [-1, 3, C3, [256, False]],            # 22  (P3 특성)
+    [-1, 1, nn.Dropout2d, [0.4]],     # 23
 
-    [-1, 1, Conv, [256, 3, 2]],
-    [[-1, 15], 1, Concat, [1]], # cat head P4
-    [-1, 3, C3, [512, False]], # 22 (P4/16-medium)
+    # --- P3 → P4 복원 경로 ---
+    [-1, 1, Conv, [256, 3, 2]],           # 24
+    [[-1, 16], 1, Concat, [1]],           # 25  (16은 P4 C3)
+    [-1, 3, C3, [512, False]],            # 26  (P4 특성 - refined)
+    [-1, 1, nn.Dropout2d, [0.4]],     # 27
 
-    [-1, 1, Conv, [512, 3, 2]],
-    [[-1, 11], 1, Concat, [1]], # cat head P5
-    [-1, 3, C3, [1024, False]], # 25 (P5/32-large)
+    # --- P4 → P5 복원 경로 ---
+    [-1, 1, Conv, [512, 3, 2]],           # 28
+    [[-1, 11], 1, Concat, [1]],           # 29  (11은 SPPF)
+    [-1, 3, C3, [1024, False]],           # 30  (P5 특성 - refined)
+    [-1, 1, nn.Dropout2d, [0.4]],     # 31
 
-    [[19, 22, 25], 1, Detect, [nc, anchors]], # Detect(P3, P4, P5)
-  ]
+    # Detect (P3=22, P4=26, P5=30)
+    [[22, 26, 30], 1, Detect, [nc, anchors]],    # 32
+]
+
