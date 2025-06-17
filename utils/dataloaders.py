@@ -1201,28 +1201,32 @@ class LoadRGBTImagesAndLabels(LoadImagesAndLabels):
 
         hyp = self.hyp
         use_mosaic = self.mosaic and random.random() < hyp["mosaic"]
-        if use_mosaic:                                           # ── Mosaic branch
-            imgs_np, labels_np = self.load_mosaic(index)         # imgs_np : list[2]  (H,W,3)
-            # numpy → torch (CHW, RGB)
-            imgs = tuple(torch.from_numpy(im.transpose(2, 0, 1)[::-1].copy()) for im in imgs_np)
-            shapes = None
+        if use_mosaic:
+            imgs_np, labels_np = self.load_mosaic(index)          # imgs_np : list[2]
+            h_mos, w_mos = imgs_np[0].shape[:2]                   # (2*s, 2*s)
 
-            # (선택) MixUp
+            # ───── (선택) MixUp 후에도 같은 변환 필요 ─────
             if random.random() < hyp["mixup"]:
                 imgs2_np, labels2_np = self.load_mosaic(random.choice(self.indices))
-                # 이미지·라벨 결합 (두 모달 모두 같은 알파 사용)
                 alpha = np.random.beta(32.0, 32.0)
                 imgs_np = [im1 * alpha + im2 * (1 - alpha) for im1, im2 in zip(imgs_np, imgs2_np)]
                 labels_np = np.concatenate((labels_np, labels2_np), 0)
-                # 다시 torch 변환
-                imgs = tuple(torch.from_numpy(im.astype(np.uint8)
-                                .transpose(2, 0, 1)[::-1].copy()) for im in imgs_np)
 
-            # ── 라벨 텐서 생성 (YOLO 형식 1 + 5 = 6, 마지막은 occlusion → 나중에 drop)
+            # ───── 픽셀 → 정규화 xywh (YOLO 형식) ─────
+            if labels_np.size:
+                labels_np[:, 1:5] = xyxy2xywhn(labels_np[:, 1:5],
+                                            w=w_mos, h=h_mos, clip=True, eps=1e-3)
+
+            # ───── numpy → torch ─────
+            imgs = tuple(torch.from_numpy(im.transpose(2, 0, 1)[::-1].copy())
+                        for im in imgs_np)
+
             nl = len(labels_np)
-            labels_out = torch.zeros((nl, 7), dtype=torch.float32)   # (batch_idx, cls, x, y, w, h, occ)
+            labels_out = torch.zeros((nl, 7), dtype=torch.float32)
             if nl:
                 labels_out[:, 1:] = torch.from_numpy(labels_np)
+
+            shapes = None
 
         else:                                                     # ── Standard branch
             imgs_np, hw0s, hw1s = self.load_image(index)          # list[2]
